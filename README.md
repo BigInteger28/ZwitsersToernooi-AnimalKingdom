@@ -1,5 +1,5 @@
 # Voorbeeld van input.txt  
-NAME [3 spaces] MIN_NODES [3 spaces] MAX_NODES
+NAME [3 spaces] MIN_NODES [3 spaces] MAX_NODES  
 Antonio  28 560 660  
 Diverta 16 152 190  
 Anna Watcho 30 750 750  

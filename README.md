@@ -4,9 +4,11 @@ Antonio&nbsp;&nbsp;&nbsp;28&nbsp;&nbsp;&nbsp;560&nbsp;&nbsp;&nbsp;660
 Diverta&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;&nbsp;152&nbsp;&nbsp;&nbsp;190  
 Anna Watcho&nbsp;&nbsp;&nbsp;30&nbsp;&nbsp;&nbsp;750&nbsp;&nbsp;&nbsp;750  
 Limbo&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;336&nbsp;&nbsp;&nbsp;420  
-HUMAN&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;0  
+HUMAN&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;1500&nbsp;&nbsp;&nbsp;0  
 BigInteger&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;80&nbsp;&nbsp;&nbsp;80  
 Doblo&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;29&nbsp;&nbsp;&nbsp;37  
+
+Als Max_Nodes 0 is wordt Min_Nodes je rating. Zie vb HUMAN  
   
 # OUTPUTS  
 ronde1.txt  

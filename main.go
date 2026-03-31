@@ -40,14 +40,17 @@ type Result struct {
 var byePlayer = Player{Name: "Bye", Level: 0, Rating: 0}
 
 func getNodes(level int) int {
-	var levelNodes = [17]int{0, 5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 110, 125, 140, 160, 180, 200}
-	if level < 18 {
-		return levelNodes[level-1]
-	}
-	if level < 38 {
-		return 200 + ((level - 17) * 40)
-	}
-	return 1000 + ((level - 37) * 50)
+    if level < 1 {
+        return 0 // voorkomt index out of range crash (veiligheid)
+    }
+    var levelNodes = [17]int{0, 5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 110, 125, 140, 160, 180, 200}
+    if level < 18 {
+        return levelNodes[level-1]
+    }
+    if level < 38 {
+        return 200 + ((level - 17) * 40)
+    }
+    return 1000 + ((level - 37) * 50)
 }
 
 func getRating(maxNodes int, level int) int {
@@ -61,27 +64,46 @@ func getRating(maxNodes int, level int) int {
 	}
 }
 
-// Spelers inlezen uit input.txt
+// Spelers inlezen uit input.txt  ← aangepast voor max_nodes=0 + namen met spaties
 func readPlayers(filename string) ([]Player, error) {
     file, err := os.Open(filename)
     if err != nil {
         return nil, err
     }
     defer file.Close()
-
     var players []Player
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
-        line := scanner.Text()
-        parts := strings.Split(line, "   ") // Drie spaties
-        if len(parts) < 3 {
+        line := strings.TrimSpace(scanner.Text())
+        if line == "" {
             continue
         }
-        level, _ := strconv.Atoi(parts[1])
-        maxNodes, _ := strconv.Atoi(parts[3])
-		rating := getRating(maxNodes, level)
+
+        parts := strings.Fields(line) // originele geest, maar beter met meervoudige spaties
+        if len(parts) < 4 {
+            fmt.Println("Waarschuwing: ongeldige regel:", line)
+            continue
+        }
+
+        // Laatste 3 velden zijn altijd: level, givenRating, maxNodes
+        level, _ := strconv.Atoi(parts[len(parts)-3])
+        givenRating, _ := strconv.Atoi(parts[len(parts)-2])
+        maxNodes, _ := strconv.Atoi(parts[len(parts)-1])
+
+        // Naam = alles vóór de laatste 3 velden (ondersteunt spaties!)
+        name := strings.Join(parts[:len(parts)-3], " ")
+
+        var rating int
+        if maxNodes == 0 {
+            // NIEUWE REGEL: max_nodes = 0 → gebruik gewoon de opgegeven rating
+            rating = givenRating
+        } else {
+            // Oude gedrag (zoals in jouw originele code)
+            rating = getRating(maxNodes, level)
+        }
+
         players = append(players, Player{
-            Name:         parts[0],
+            Name:         name,
             Level:        level,
             Rating:       rating,
             Punten:       0,

@@ -644,6 +644,9 @@ func getBonus(theRange int, maxRatingAdd int, ratingOpponent int, ownRating int,
         bonus = (ratingOpponent - low) / perRating
     }
     if result == "w" {
+		if ratingOpponent < ownRating-74 {
+			return bonus / 2
+		}
         return bonus
     } else if result == "d" {
         return 0

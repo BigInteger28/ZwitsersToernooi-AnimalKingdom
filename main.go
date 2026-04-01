@@ -707,8 +707,8 @@ type PlayerData struct {
 }
 
 func generateRatingHTML(players []Player, allResults [][]Result, initialRatings map[string]int) error {
-    var theRange int = 225
-    var maxRatingAdd int = 75
+    var theRange int = 300
+    var maxRatingAdd int = 50
 
     // Sorteer spelers voor ranking
     sortPlayers(players)

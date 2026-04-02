@@ -208,26 +208,26 @@ func loadPlayerStatus(filename string, players []Player) error {
     return scanner.Err()
 }
 
-// Spelers sorteren op Punten, dan Matchscore, dan RatOpp, dan Rating (allemaal aflopend)
+// Spelers sorteren op Punten, dan Rating, dan RatOpp, dan Matchscore, dan Rating (allemaal aflopend)
 func sortPlayers(players []Player) {
     sort.Slice(players, func(i, j int) bool {
         if players[i].Punten != players[j].Punten {
             return players[i].Punten > players[j].Punten
         }
-        if players[i].Matchscore != players[j].Matchscore {
-            return players[i].Matchscore > players[j].Matchscore
-        }
-        var ratOppI, ratOppJ float64
+		if players[i].Rating != players[j].Rating {
+			return players[i].Rating > players[j].Rating
+		}
+		var ratOppI, ratOppJ float64
         if players[i].RoundsPlayed > 0 {
             ratOppI = players[i].RatOppTotal / float64(players[i].RoundsPlayed)
         }
-        if players[j].RoundsPlayed > 0 {
+		if players[j].RoundsPlayed > 0 {
             ratOppJ = players[j].RatOppTotal / float64(players[j].RoundsPlayed)
         }
         if ratOppI != ratOppJ {
             return ratOppI > ratOppJ
         }
-        return players[i].Rating > players[j].Rating
+        return players[i].Matchscore > players[j].Matchscore
     })
 }
 
@@ -557,8 +557,8 @@ func generateHTML(round int, players []Player, matches []Match) error {
             <th>Level</th>
             <th>Rating</th>
             <th>Punten</th>
-            <th>Matchscore</th>
-            <th>RatOpp</th>
+			<th>RatOpp</th>
+            <th>Matchscore</th>            
         </tr>
         {{range $index, $player := .Players}}
         <tr>
@@ -567,8 +567,8 @@ func generateHTML(round int, players []Player, matches []Match) error {
             <td>{{$player.Level}}</td>
             <td>{{$player.Rating}}</td>
             <td>{{$player.Punten}}</td>
-            <td>{{$player.Matchscore}}</td>
-            <td>{{if $player.RoundsPlayed}}{{printf "%.2f" (div $player.RatOppTotal $player.RoundsPlayed)}}{{else}}0{{end}}</td>
+			<td>{{if $player.RoundsPlayed}}{{printf "%.0f" (div $player.RatOppTotal $player.RoundsPlayed)}}{{else}}0{{end}}</td>
+            <td>{{$player.Matchscore}}</td>            
         </tr>
         {{end}}
     </table>

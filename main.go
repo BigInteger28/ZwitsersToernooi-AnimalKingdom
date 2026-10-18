@@ -484,7 +484,35 @@ func updateMatchResults(matches []Match, results []Result) {
     }
 }
 
-func sortMatches(matches []Match) {
+// previousStandings geeft de positie (0 = nr 1) per speler volgens de stand na de vorige ronde.
+// Geeft nil terug bij ronde 1 of als er geen status van de vorige ronde is.
+func previousStandings(round int, players []Player) map[string]int {
+    if round <= 1 {
+        return nil
+    }
+    statusFile := fmt.Sprintf("ronde%d_status.txt", round-1)
+    if _, err := os.Stat(statusFile); err != nil {
+        return nil
+    }
+    tmp := make([]Player, len(players))
+    copy(tmp, players)
+    for i := range tmp {
+        tmp[i].Punten, tmp[i].Matchscore, tmp[i].RatOppTotal, tmp[i].RoundsPlayed = 0, 0, 0, 0
+    }
+    if err := loadPlayerStatus(statusFile, tmp); err != nil {
+        return nil
+    }
+    sortPlayers(tmp)
+    rank := make(map[string]int, len(tmp))
+    for i, p := range tmp {
+        rank[p.Name] = i
+    }
+    return rank
+}
+
+// sortMatches sorteert de borden: volgens stand van de vorige ronde (rank), of bij ronde 1 (rank == nil)
+// volgens hoogste rating.
+func sortMatches(matches []Match, rank map[string]int) {
     sort.Slice(matches, func(i, j int) bool {
         // Bye altijd onderaan
         isByeI := matches[i].Player2.Name == "Bye"
@@ -496,7 +524,23 @@ func sortMatches(matches []Match) {
             return false
         }
 
-        // === NIEUWE SORTERING: hoogste rating speler eerst ===
+        if rank != nil {
+            best := func(m Match) (int, int) {
+                a, b := rank[m.Player1.Name], rank[m.Player2.Name]
+                if a > b {
+                    a, b = b, a
+                }
+                return a, b
+            }
+            bi, wi := best(matches[i])
+            bj, wj := best(matches[j])
+            if bi != bj {
+                return bi < bj
+            }
+            return wi < wj
+        }
+
+        // Ronde 1: hoogste rating speler eerst
         maxI := matches[i].Player1.Rating
         if matches[i].Player2.Rating > maxI {
             maxI = matches[i].Player2.Rating
@@ -507,7 +551,7 @@ func sortMatches(matches []Match) {
         }
 
         if maxI != maxJ {
-            return maxI > maxJ // 3050 vs 1400 > 3000 vs 2000
+            return maxI > maxJ
         }
 
         // Secundair: som van ratings
@@ -517,7 +561,7 @@ func sortMatches(matches []Match) {
             return sumRatingI > sumRatingJ
         }
 
-        // Tertiair: som van punten (oude gedrag)
+        // Tertiair: som van punten
         sumI := matches[i].Player1.Punten + matches[i].Player2.Punten
         sumJ := matches[j].Player1.Punten + matches[j].Player2.Punten
         return sumI > sumJ
@@ -526,8 +570,8 @@ func sortMatches(matches []Match) {
 
 // HTML genereren met CSS voor centrering, randen en padding
 func generateHTML(round int, players []Player, matches []Match) error {
-    // Sorteer de matches van beste naar slechtste spelers
-    sortMatches(matches)
+    // Sorteer de borden volgens de stand van de vorige ronde
+    sortMatches(matches, previousStandings(round, players))
     const tmpl = `
     <html>
     <head>
@@ -932,7 +976,7 @@ func main() {
         case "1":
             currentRound++
             lastMatches = pairPlayers(players)
-            sortMatches(lastMatches) // ← NIEUW: sorteer vóór wegschrijven
+            sortMatches(lastMatches, previousStandings(currentRound, players)) // ← sortering op stand vorige ronde
             if err := generateRoundFile(currentRound, lastMatches); err != nil {
                 fmt.Println("Fout bij genereren ronde:", err)
             } else {
@@ -948,7 +992,7 @@ func main() {
             currentRound++
             finalMatch := Match{Player1: players[0], Player2: players[1], Result: "0-0"}
             lastMatches = []Match{finalMatch}
-            sortMatches(lastMatches) // ← NIEUW: sorteer vóór wegschrijven
+            sortMatches(lastMatches, previousStandings(currentRound, players)) // ← sortering op stand vorige ronde
             if err := generateRoundFile(currentRound, lastMatches); err != nil {
                 fmt.Println("Fout bij genereren finale ronde:", err)
             } else {
